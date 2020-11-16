@@ -6,21 +6,39 @@ module testbench();
 
 	wire[31:0] writedata,dataadr;
 	wire memwrite;
-
-	top dut(clk,rst,writedata,dataadr,memwrite);
+	//-------DEBUG---------
+	wire [31:0] instr;
+	wire stallD;
+	wire branchD;
+	wire forward_AD;
+    wire forward_BD;
+  wire [1:0] forward_AE;
+ wire [1:0] forward_BE;
+   wire stallF;
+   wire flushE;
+     wire [4:0] rsE;
+   wire [4:0] rtE;
+   wire [4:0] rsD;
+   wire [4:0] rtD;
+     wire [4:0]       write_regE;
+    wire [4:0]       write_regM;
+    wire [4:0]       write_regW;
+    wire [31:0] instrD;
+    //-------DEBUG END-----
+	top dut(clk,rst,writedata,dataadr,memwrite, instr, stallD, branchD, forward_AD, forward_BD, forward_AE, forward_BE, stallF, flushE, rsE, rtE, rsD, rtD, write_regE, write_regM, write_regW, instrD);
 
 	initial begin
 		rst = 0;
-		#2 rst = 1;
-		#2 rst <= 0;
+		#20 rst = 1;
+		#20 rst <= 0;
 	end
 
 	always begin
 		clk <= 1;
-		#10;
+		#20;
 		clk <= 0;
-		#10;
-	
+		#20;
+	 
 	end
 
 	always @(negedge clk) begin

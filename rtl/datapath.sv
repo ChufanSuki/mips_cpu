@@ -1,9 +1,9 @@
 `timescale 1ns / 1ps
 
 module datapath(
-	input logic         clk,
+  input logic         clk,
   input logic         rst,
-	input logic [31:0]  instr,
+  input logic [31:0]  instr,
   input logic [31:0]  read_dataM,
   input logic         reg_writeD,
   input logic         mem_to_regD,
@@ -35,7 +35,8 @@ module datapath(
   output wire        mem_to_regM,
   output wire        reg_writeE,
   output wire        reg_writeM,
-  output wire        reg_writeW
+  output wire        reg_writeW,
+  output wire [31:0] instrD
     );
 
    // Internal Signals
@@ -56,7 +57,6 @@ module datapath(
    wire        pc_srcD;
    wire [4:0]  rdD;
    wire [4:0]  rdE;
-   wire [31:0] instrD;
    wire        mem_writeE;
    wire [2:0]  alu_controlE;
    wire        alu_srcE;
@@ -118,7 +118,7 @@ module datapath(
    .clk(clk),
    .rst(rst),
    .en(~stallD),
-   .clear(pc_srcD),
+   .clear(pc_srcD || jumpD),
    .d(instr),
    .q(instrD));
    
@@ -128,6 +128,7 @@ module datapath(
    assign rsD = instrD[25:21];
    assign rtD = instrD[20:16];
    assign rdD = instrD[15:11];
+   
    regfile regfile(
    .clk(~clk),
    .reset(rst),
@@ -157,7 +158,7 @@ module datapath(
    assign pc_srcD = branchD & equalD;
 
    sign_extend sign_extend(
-   .a(instr[15:0]),
+   .a(instrD[15:0]),
    .y(sign_immD)
    );
 
@@ -201,7 +202,7 @@ module datapath(
    alu #(32) ALU(srcAE, srcBE, alu_controlE, alu_outE, zero);
    /* verilator lint_on PINMISSING */
    assign write_dataE = srcBE_temp;
-   mux2 #(5) mux_write_regE (rtE, rdE, reg_dstD, write_regE);
+   mux2 #(5) mux_write_regE (rtE, rdE, reg_dstE, write_regE);
    //--------------Registers------------------
    flopr #(32) flop_aluE(clk, rst, alu_outE, alu_outM);
    flopr #(1) flop_reg_writeE(clk, rst, reg_writeE, reg_writeM);

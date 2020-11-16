@@ -4,7 +4,7 @@ module imem(
 );
    logic [31:0]       RAM[63:0];
    initial
-     $readmemh("memfile.dat", RAM);
+     $readmemh("/home/allen/mips_cpu/memfile.dat", RAM);
    assign rd = RAM[a];
    
 endmodule // imem
