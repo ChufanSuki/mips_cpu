@@ -45,7 +45,6 @@ module mips(
    // wire [1:0]       forward_BE;
    wire [31:0]      pcF;
    wire [31:0]      write_dataM;
-   //wire             mem_writeM;
    wire [4:0]       rsD;
    wire [4:0]       rtD;
    wire [4:0]       rsE;
