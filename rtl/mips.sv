@@ -6,24 +6,7 @@ module mips(
   output wire [31:0] write_data,
   output wire [31:0] pc,
   output wire        mem_writeM,
-  output wire [31:0] alu_outM,
-  output wire stallD, // DEBUG
-  output wire branchD, // DEBUG
-  output wire forward_AD,
-  output wire forward_BD,
-  output wire [1:0] forward_AE,
-  output wire [1:0] forward_BE,
-  output wire stallF,
-  output wire flushE,
-  output wire [4:0] rsEt,
-  output wire [4:0] rtEt,
-  output wire [4:0] rsDt,
-  output wire [4:0] rtDt,
-   output  wire [4:0]       write_regEt,
-   output wire [4:0]       write_regMt,
-   output wire [4:0]       write_regWt,
-   output wire [31:0] instrDt
-  
+  output wire [31:0] alu_outM
 	);
 
    //-----------internal signals--------
@@ -34,18 +17,17 @@ module mips(
    wire [2:0]       alu_controlD;
    wire             alu_srcD;
    wire             reg_dstD;
-   // wire             branchD;
+   wire             branchD;
    wire             jumpD;
-   // wire             stallF;
-   // wire             stallD;
-   // wire             forward_AD;
-   // wire             forward_BD;
-   // wire             flushE;
-   // wire [1:0]       forward_AE;
-   // wire [1:0]       forward_BE;
+   wire             stallF;
+   wire             stallD;
+   wire             forward_AD;
+   wire             forward_BD;
+   wire             flushE;
+   wire [1:0]       forward_AE;
+   wire [1:0]       forward_BE;
    wire [31:0]      pcF;
    wire [31:0]      write_dataM;
-   //wire             mem_writeM;
    wire [4:0]       rsD;
    wire [4:0]       rtD;
    wire [4:0]       rsE;
@@ -59,14 +41,6 @@ module mips(
    wire             reg_writeM;
    wire             reg_writeW;
                   
-   assign rsDt = rsD;
-   assign rtDt = rtD;
-   assign rsEt = rsE;
-   assign rtEt = rtE;
-   assign write_regEt = write_regE;
-   assign write_regMt = write_regM;
-   assign write_regWt = write_regW;
-   assign instrDt = instrD; 
    
    //-----------------------------------
    
