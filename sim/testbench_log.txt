@@ -1,6 +1,0 @@
-WARNING: rtl/imem.sv:7: $readmemh: Standard inconsistency, following 1364-2005.
-ERROR: rtl/imem.sv:7: $readmemh: Unable to open memfile.dat for reading.
-** VVP Stop(0) **
-** Flushing output streams.
-** Current simulation time is 72554120000 ticks.
-** Continue **
