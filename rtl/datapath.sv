@@ -20,59 +20,59 @@ module datapath(
   input logic         flushE,
   input logic [1:0]   forward_AE,
   input logic [1:0]   forward_BE,
-  output logic [31:0] pcF,
-  output logic [31:0] alu_outM,
-  output logic [31:0] write_dataM,
-  output logic        mem_writeM,
-  output logic [4:0]  rsD,
-  output logic [4:0]  rtD,
-  output logic [4:0]  rsE,
-  output logic [4:0]  rtE,
-  output logic [4:0]  write_regE,
-  output logic [4:0]  write_regM,
-  output logic [4:0]  write_regW,
-  output logic        mem_to_regE,
-  output logic        mem_to_regM,
-  output logic        reg_writeE,
-  output logic        reg_writeM,
-  output logic        reg_writeW
+  output wire [31:0] pcF,
+  output wire [31:0] alu_outM,
+  output wire [31:0] write_dataM,
+  output wire        mem_writeM,
+  output wire [4:0]  rsD,
+  output wire [4:0]  rtD,
+  output wire [4:0]  rsE,
+  output wire [4:0]  rtE,
+  output wire [4:0]  write_regE,
+  output wire [4:0]  write_regM,
+  output wire [4:0]  write_regW,
+  output wire        mem_to_regE,
+  output wire        mem_to_regM,
+  output wire        reg_writeE,
+  output wire        reg_writeM,
+  output wire        reg_writeW
     );
 
    // Internal Signals
-   logic [31:0] pc_next;
-   logic [31:0] pc_temp;
-   logic [31:0] pc_plus4F;
-   logic [31:0] pc_plus4D;
-   logic [31:0] pc_branchD;
-   logic [31:0] pc_jumpD;
-   logic        equalD;
-   logic [31:0] sign_immD;
-   logic [31:0] sign_immE;
-   logic [31:0] sl2_immD;
-   logic [31:0] rd1D;
-   logic [31:0] rd2D;
-   logic [31:0] rd1E;
-   logic [31:0] rd2E;
-   logic        pc_srcD;
-   logic [4:0]  rdD;
-   logic [4:0]  rdE;
-   logic [31:0] instrD;
-   logic        mem_writeE;
-   logic [2:0]  alu_controlE;
-   logic        alu_srcE;
-   logic [31:0] alu_outE;
-   logic        mem_to_regW;
-   logic [31:0] alu_outW;
-   logic [31:0] read_dataW;
-   logic [31:0] write_dataE;
-   logic        reg_dstE;
-   logic [31:0] srcAE;
-   logic [31:0] srcBE;
-   logic [31:0] srcBE_temp;
-   logic [31:0] resultW;
-   logic [31:0] equal_src1;
-   logic [31:0] equal_src2;
-   
+   wire [31:0] pc_next;
+   wire [31:0] pc_temp;
+   wire [31:0] pc_plus4F;
+   wire [31:0] pc_plus4D;
+   wire [31:0] pc_branchD;
+   wire [31:0] pc_jumpD;
+   wire        equalD;
+   wire [31:0] sign_immD;
+   wire [31:0] sign_immE;
+   wire [31:0] sl2_immD;
+   wire [31:0] rd1D;
+   wire [31:0] rd2D;
+   wire [31:0] rd1E;
+   wire [31:0] rd2E;
+   wire        pc_srcD;
+   wire [4:0]  rdD;
+   wire [4:0]  rdE;
+   wire [31:0] instrD;
+   wire        mem_writeE;
+   wire [2:0]  alu_controlE;
+   wire        alu_srcE;
+   wire [31:0] alu_outE;
+   wire        mem_to_regW;
+   wire [31:0] alu_outW;
+   wire [31:0] read_dataW;
+   wire [31:0] write_dataE;
+   wire        reg_dstE;
+   wire [31:0] srcAE;
+   wire [31:0] srcBE;
+   wire [31:0] srcBE_temp;
+   wire [31:0] resultW;
+   wire [31:0] equal_src1;
+   wire [31:0] equal_src2;
+   wire        zero;
    //-------------IF----------------------------
    flopenr #(32) pc(
    .clk(clk),
@@ -87,6 +87,7 @@ module datapath(
    .in1(32'h4),
    .cin(1'b0),
    .out(pc_plus4F));
+   
    /* verilator lint_onn PINMISSING */
    mux2 #(32) mux_pc1 (
    .d0(pc_plus4F),
@@ -197,7 +198,7 @@ module datapath(
    mux3 #(32) mux_alu_srcB1 (rd2E, resultW, alu_outM, forward_BE, srcBE_temp);
    mux2 #(32) mux_alu_srcB2 (srcBE_temp, sign_immE, alu_srcE, srcBE);
    /* verilator lint_off PINMISSING */
-   alu #(32) ALU(srcAE, srcBE, alu_controlE, alu_outE);
+   alu #(32) ALU(srcAE, srcBE, alu_controlE, alu_outE, zero);
    /* verilator lint_on PINMISSING */
    assign write_dataE = srcBE_temp;
    mux2 #(5) mux_write_regE (rtE, rdE, reg_dstD, write_regE);

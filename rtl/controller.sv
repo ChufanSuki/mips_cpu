@@ -2,17 +2,17 @@
 module controller(
 	input logic [5:0]  op,
 	input logic [5:0]  funct,
-  output logic       mem_to_reg,
-  output logic       mem_write,
-  output logic       alu_src,
-  output logic       reg_dst,
-  output logic       reg_write,
-  output logic       jump,
-  output logic       branch,
-  output logic [2:0] alu_control
+  output wire       mem_to_reg,
+  output wire       mem_write,
+  output wire       alu_src,
+  output wire       reg_dst,
+  output wire       reg_write,
+  output wire       jump,
+  output wire       branch,
+  output wire [2:0] alu_control
 );
 	
-	 logic [1:0] alu_op;
+	 wire [1:0] alu_op;
    
 	main_decoder main_decoder(
 		.op(op),

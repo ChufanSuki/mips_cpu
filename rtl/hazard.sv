@@ -14,18 +14,18 @@ module hazard(
     input logic       reg_writeM,
     input logic       reg_writeW,
     input logic       branchD,
-    output logic      forward_AD,
-    output logic      forward_BD,
+    output wire      forward_AD,
+    output wire      forward_BD,
     output logic [1:0] forward_AE,
     output logic [1:0] forward_BE,
-    output logic      stallF,
-    output logic      stallD,
-//    output logic      flushD,
-    output logic      flushE
-//    output logic      flushM
+    output wire      stallF,
+    output wire      stallD,
+//    output wire      flushD,
+    output wire      flushE
+//    output wire      flushM
 );
-   logic              lw_stall;
-   logic              branch_stall;
+   wire              lw_stall;
+   wire              branch_stall;
    
 //---------Solve Data Hazard with Forwarding-----------
 

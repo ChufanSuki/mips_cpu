@@ -3,8 +3,8 @@ module alu
     input logic  [p_nbits-1:0]  a,
     input logic  [p_nbits-1:0]  b,
     input logic  [2:0]        op,
-    output logic [p_nbits-1:0]  res,
-    output logic              zero
+    output wire  [p_nbits-1:0]  res,
+    output wire              zero
 );
    
    assign res = (op == 3'b000) ? a & b:

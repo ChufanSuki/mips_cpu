@@ -3,43 +3,43 @@ module mips(
   input logic rst,
 	input logic [31:0] read_data,
 	input logic [31:0] instr,
-  output logic [31:0] write_data,
-  output logic [31:0] pc,
-  output logic        mem_write
+  output wire [31:0] write_data,
+  output wire [31:0] pc,
+  output wire        mem_write
 	);
 
    //-----------internal signals--------
-   logic             reg_writeD;
-   logic             mem_to_regD;
-   logic             mem_writeD;
-   logic [2:0]       alu_controlD;
-   logic             alu_srcD;
-   logic             reg_dstD;
-   logic             branchD;
-   logic             jumpD;
-   logic             stallF;
-   logic             stallD;
-   logic             forward_AD;
-   logic             forward_BD;
-   logic             flushE;
-   logic [1:0]       forward_AE;
-   logic [1:0]       forward_BE;
-   logic [31:0]      pcF;
-   logic [31:0]      alu_outM;
-   logic [31:0]      write_dataM;
-   logic             mem_writeM;
-   logic [4:0]       rsD;
-   logic [4:0]       rtD;
-   logic [4:0]       rsE;
-   logic [4:0]       rtE;
-   logic [4:0]       write_regE;
-   logic [4:0]       write_regM;
-   logic [4:0]       write_regW;
-   logic             mem_to_regE;
-   logic             mem_to_regM;
-   logic             reg_writeE;
-   logic             reg_writeM;
-   logic             reg_writeW;
+   wire             reg_writeD;
+   wire             mem_to_regD;
+   wire             mem_writeD;
+   wire [2:0]       alu_controlD;
+   wire             alu_srcD;
+   wire             reg_dstD;
+   wire             branchD;
+   wire             jumpD;
+   wire             stallF;
+   wire             stallD;
+   wire             forward_AD;
+   wire             forward_BD;
+   wire             flushE;
+   wire [1:0]       forward_AE;
+   wire [1:0]       forward_BE;
+   wire [31:0]      pcF;
+   wire [31:0]      alu_outM;
+   wire [31:0]      write_dataM;
+   wire             mem_writeM;
+   wire [4:0]       rsD;
+   wire [4:0]       rtD;
+   wire [4:0]       rsE;
+   wire [4:0]       rtE;
+   wire [4:0]       write_regE;
+   wire [4:0]       write_regM;
+   wire [4:0]       write_regW;
+   wire             mem_to_regE;
+   wire             mem_to_regM;
+   wire             reg_writeE;
+   wire             reg_writeM;
+   wire             reg_writeW;
    
                      
    

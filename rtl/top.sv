@@ -2,14 +2,14 @@
 module top(
 	input logic         clk,
   input logic         reset,
-	output logic [31:0] write_data,
-  output logic [31:0] data_addr,
-	output logic        mem_write
+	output wire [31:0] write_data,
+  output wire [31:0] data_addr,
+	output wire        mem_write
 	);
 	
-  logic [31:0] pc;
-	logic [31:0] read_data;
-	logic [31:0] instr;
+  wire [31:0] pc;
+	wire [31:0] read_data;
+	wire [31:0] instr;
 	
 	mips mips(
 		.clk(clk),
