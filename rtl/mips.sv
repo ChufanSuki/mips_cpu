@@ -9,7 +9,6 @@ module mips(
 	);
 
    //-----------internal signals--------
-   logic [31:0]      read_dataM;
    logic             reg_writeD;
    logic             mem_to_regD;
    logic             mem_writeD;
@@ -46,11 +45,6 @@ module mips(
    
    
    //-----------------------------------
-
-   assign read_dataM = read_data;
-   assign pcF = pc;
-   assign mem_write = mem_writeM;
-   assign write_data = write_dataM;
    assign read_dataM = read_data;
    
 	datapath mips_datapath(
@@ -71,13 +65,13 @@ module mips(
     .flushE(flushE),
     .forward_AE(forward_AE),
     .forward_BE(forward_BE),
-    .read_dataM(read_dataM),
+    .read_dataM(read_data),
     .instr(instr),
     //output
     .alu_outM(alu_outM),
-    .write_dataM(write_dataM),
-    .pcF(pcF),
-    .mem_writeM(mem_writeM),
+    .write_dataM(write_data),
+    .pcF(pc),
+    .mem_writeM(mem_write),
     .rsD(rsD),
     .rtD(rtD),
     .rsE(rsE),
