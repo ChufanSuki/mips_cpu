@@ -45,7 +45,6 @@ module mips(
    
    
    //-----------------------------------
-   assign read_dataM = read_data;
    
 	datapath mips_datapath(
 		.clk(clk),

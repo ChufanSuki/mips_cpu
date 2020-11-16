@@ -13,13 +13,13 @@ lint:
 
 simulate:
 	iverilog -o $(TESTBENCH).vvp $(SRCS) $(TESTBENCH).sv
-	vvp $(TESTBENCH).vvp > $(TESTBENCH)_log.txt
+	vvp $(TESTBENCH).vvp
 
 gtkwave:
-	gtkwave $(RESULT).vcd
+	gtkwave $(TESTBENCH).vcd
 
 scansion: simulate
-	open /Applications/Scansion.app $(RESULT).vcd
+	open /Applications/Scansion.app $(TESTBENCH).vcd
 
 clean:
 	rm -rf $(TESTBENCH).vvp $(RESULT).vcd $(TESTBENCH)_log.txt $(TESTBENCH)/*_log.txt  $(TESTBENCH)/*.vvp
