@@ -1,9 +1,15 @@
+typedef enum logic [$clog2(4)-1:0] {
+   strongly_not_taken,
+   weakly_not_taken,
+   strongly_taken,
+   weakly_taken
+} predict_state_t;
+
 module branch_predict_local #(
 parameter PHT_INDEX_BITS = 7,
 parameter BHT_INDEX_BITS = 3,
 parameter BHR_BITS = 4,
-parameter PC_TAIL = 2,
-parameter PHR = 2
+parameter PC_TAIL = 2
 )(
   input logic                      clk,
   input logic                      rst,
@@ -19,10 +25,11 @@ parameter PHR = 2
    parameter PC_HEAD = PC_TAIL + PC_SEGMENT_LENGTH - 1;
    parameter PC_HASH_BITS = BHT_INDEX_BITS;
   // States
-   parameter strongly_not_taken = 2'b00;
-   parameter weakly_not_taken = 2'b01;
-   parameter weakly_taken = 2'b11;
-   parameter strongly_taken = 2'b10;
+   parameter PHR_BITS = 2;
+  // parameter strongly_not_taken = 2'b00;
+  // parameter weakly_not_taken = 2'b01;
+  // parameter weakly_taken = 2'b11;
+  // parameter strongly_taken = 2'b10;
    
 
    reg [BHR_BITS-1:0] BHT [(1<<BHT_INDEX_BITS)-1:0];
@@ -32,7 +39,6 @@ parameter PHR = 2
    integer            i;
    integer            j;
    wire [PHT_INDEX_BITS-1:0] PHT_indexF;
-   
    wire [PC_HASH_BITS-1:0] pc_hashing;
    // Hashing
    assign pc_hashing = pcF[PC_HASH_BITS-1:0]; // TODO
@@ -73,7 +79,7 @@ parameter PHR = 2
                 PHT[PHT_indexM] <= weakly_not_taken;
            end
            strongly_taken: begin
-              if (takneM)
+              if (takenM)
                 PHT[PHT_indexM] <= strongly_taken;
               else
                 PHT[PHT_indexM] <= weakly_taken;

@@ -1,25 +1,26 @@
 `timescale 1ns / 1ps
 
 module datapath(
-  input logic         clk,
-  input logic         rst,
-  input logic [31:0]  instr,
-  input logic [31:0]  read_dataM,
-  input logic         reg_writeD,
-  input logic         mem_to_regD,
-  input logic         mem_writeD,
-  input logic [2:0]   alu_controlD,
-  input logic         alu_srcD,
-  input logic         reg_dstD,
-  input logic         branchD,
-  input logic         jumpD,
-  input logic         stallF,
-  input logic         stallD,
-  input logic         forward_AD,
-  input logic         forward_BD,
-  input logic         flushE,
-  input logic [1:0]   forward_AE,
-  input logic [1:0]   forward_BE,
+  input logic        clk,
+  input logic        rst,
+  input logic [31:0] instr,
+  input logic [31:0] read_dataM,
+  input logic        reg_writeD,
+  input logic        mem_to_regD,
+  input logic        mem_writeD,
+  input logic [2:0]  alu_controlD,
+  input logic        alu_srcD,
+  input logic        reg_dstD,
+  input logic        branchD,
+  input logic        jumpD,
+  input logic        stallF,
+  input logic        stallD,
+  input logic        forward_AD,
+  input logic        forward_BD,
+  input logic        flushE,
+  input logic [1:0]  forward_AE,
+  input logic [1:0]  forward_BE,
+  input logic        predict_takenF,
   output wire [31:0] pcF,
   output wire [31:0] alu_outM,
   output wire [31:0] write_dataM,
@@ -73,6 +74,13 @@ module datapath(
    wire [31:0] equal_src1;
    wire [31:0] equal_src2;
    wire        zero;
+   wire        predict_takeD;
+   wire        takenE;
+   wire        takenM;
+   wire        predict_resultE;
+   wire        predict_resultM;
+   
+   
    //-------------IF----------------------------
    flopenr #(32) pc(
    .clk(clk),
@@ -121,6 +129,15 @@ module datapath(
    .clear(pc_srcD || jumpD),
    .d(instr),
    .q(instrD));
+
+   flopenrc #(32) prdictor_flopD(
+   .clk(clk),
+   .rst(rst),
+   .en(~stallD),
+   .clear(pc_srcD || jumpD),
+   .d(predict_takeF),
+   .q(predict_takeD));
+   
    
    //-------------------------------------------
 
@@ -144,18 +161,18 @@ module datapath(
    .d0(rd1D),
    .d1(alu_outM),
    .s(forward_AD),
-   .y(equal_src1)
+   .y(equal_src1D)
    );
    
    mux2 #(32) mux_equalD2(
    .d0(rd2D),
    .d1(alu_outM),
    .s(forward_BD),
-   .y(equal_src2)
+   .y(equal_src2D)
    );
 
-   assign equalD = (equal_src1 == equal_src2);
-   assign pc_srcD = branchD & equalD;
+   // assign equalD = (equal_src1 == equal_src2);
+   assign pc_srcD = branchD & predict_takeD;
 
    sign_extend sign_extend(
    .a(instrD[15:0]),
@@ -191,6 +208,9 @@ module datapath(
    floprc #(5) flop_rtD(clk, rst, flushE, rtD, rtE);
    floprc #(5) flop_rdD(clk, rst, flushE, rdD, rdE);
    floprc #(32) flop_sign_immD(clk, rst, flushE, sign_immD, sign_immE);
+   floprc #(32) flop_equal_src1D(clk, rst, flushE, equal_src1D, equal_src1E);
+   floprc #(32) flop_equal_src2D(clk, rst, flushE, equal_src2D, equal_src2E);
+   floprc #(1) flop_branchD(clk, rst, flushE, branchD, branchE);
    
    //------------------------------------------
 
@@ -203,6 +223,12 @@ module datapath(
    /* verilator lint_on PINMISSING */
    assign write_dataE = srcBE_temp;
    mux2 #(5) mux_write_regE (rtE, rdE, reg_dstE, write_regE);
+   assign takenE = (equal_src1E == equal_src2E);
+   // branchE predict_takeE equalE  result
+   //   0         x           x       1
+   //   1         1           1       1
+   //   1         0           0       1
+   predict_resultE = (branchE && (predict_takeE == takenE)) || (~branchE);
    //--------------Registers------------------
    flopr #(32) flop_aluE(clk, rst, alu_outE, alu_outM);
    flopr #(1) flop_reg_writeE(clk, rst, reg_writeE, reg_writeM);
@@ -210,6 +236,8 @@ module datapath(
    flopr #(1) flop_mem_writeE(clk, rst, mem_writeE, mem_writeM);
    flopr #(32) flop_write_dataE(clk, rst, write_dataE, write_dataM);
    flopr #(5) flop_write_regE(clk, rst, write_regE, write_regM);
+   flopr #(1) flop_predict_resultE(clk, rst, predict_resultE, predict_resultM);
+   flopr #(1) flop_takenE(clk, rst, takenE, takenM);
    //------------------------------------------
 
    //-----------------MEM-----------------------
