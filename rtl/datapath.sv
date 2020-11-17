@@ -1,56 +1,63 @@
 `timescale 1ns / 1ps
 module datapath #(
-parameter PHT_INDEX_BITS = 10
+parameter PHT_INDEX_BITS = 10,
+parameter LOCAL_PC_HASH_BITS = 3
 )(
-  input logic                      clk,
-  input logic                      rst,
-  input logic [31:0]               instr,
-  input logic [31:0]               read_dataM,
-  input logic                      reg_writeD,
-  input logic                      mem_to_regD,
-  input logic                      mem_writeD,
-  input logic [2:0]                alu_controlD,
-  input logic                      alu_srcD,
-  input logic                      reg_dstD,
-  input logic                      branchD,
-  input logic                      jumpD,
-  input logic                      stallF,
-  input logic                      stallD,
-  input logic                      forward_AD,
-  input logic                      forward_BD,
-  input logic                      flushE,
-  input logic [1:0]                forward_AE,
-  input logic [1:0]                forward_BE,
-  input logic                      predict_takeF,
-  input logic [PHT_INDEX_BITS-1:0] PHT_indexF,
-  output wire [31:0]               pcF,
-  output wire [31:0]               alu_outM,
-  output wire [31:0]               write_dataM,
-  output wire                      mem_writeM,
-  output wire [4:0]                rsD,
-  output wire [4:0]                rtD,
-  output wire [4:0]                rsE,
-  output wire [4:0]                rtE,
-  output wire [4:0]                write_regE,
-  output wire [4:0]                write_regM,
-  output wire [4:0]                write_regW,
-  output wire                      mem_to_regE,
-  output wire                      mem_to_regM,
-  output wire                      reg_writeE,
-  output wire                      reg_writeM,
-  output wire                      reg_writeW,
-  output wire [31:0]               instrD,
-  output wire                      predict_resultE,
-  output wire                      actually_takenE,
-  output wire                      branchE,
-  output wire [PHT_INDEX_BITS-1:0] PHT_indexE,
+  input logic                          clk,
+  input logic                          rst,
+  input logic [31:0]                   instr,
+  input logic [31:0]                   read_dataM,
+  input logic                          reg_writeD,
+  input logic                          mem_to_regD,
+  input logic                          mem_writeD,
+  input logic [2:0]                    alu_controlD,
+  input logic                          alu_srcD,
+  input logic                          reg_dstD,
+  input logic                          branchD,
+  input logic                          jumpD,
+  input logic                          stallF,
+  input logic                          stallD,
+  input logic                          forward_AD,
+  input logic                          forward_BD,
+  input logic                          flushE,
+  input logic [1:0]                    forward_AE,
+  input logic [1:0]                    forward_BE,
+  input logic                          local_predict_takeF,
+  input logic                          global_predict_takeF,
+  input logic                          predict_takeF,
+  input logic [PHT_INDEX_BITS-1:0]     local_PHT_indexF,
+  input logic [PHT_INDEX_BITS-1:0]     global_PHT_indexF,
+  input logic [LOCAL_PC_HASH_BITS-1:0] pc_hashingF,
+  output wire [31:0]                   pcF,
+  output wire [31:0]                   alu_outM,
+  output wire [31:0]                   write_dataM,
+  output wire                          mem_writeM,
+  output wire [4:0]                    rsD,
+  output wire [4:0]                    rtD,
+  output wire [4:0]                    rsE,
+  output wire [4:0]                    rtE,
+  output wire [4:0]                    write_regE,
+  output wire [4:0]                    write_regM,
+  output wire [4:0]                    write_regW,
+  output wire                          mem_to_regE,
+  output wire                          mem_to_regM,
+  output wire                          reg_writeE,
+  output wire                          reg_writeM,
+  output wire                          reg_writeW,
+  output wire [31:0]                   instrD,
+  output wire                          local_predict_resultE,
+  output wire                          global_predict_resultE,
+  output wire                          actually_takenE,
+  output wire                          branchE,
+  output wire [PHT_INDEX_BITS-1:0]     local_PHT_indexE,
+  output wire [PHT_INDEX_BITS-1:0]     global_PHT_indexE, 
+  output wire [LOCAL_PC_HASH_BITS-1:0] pc_hashingE,
   // DEBUG
-  output wire                      pc_srcDt,
-  output wire [31:0]               pc_nextt,
-  output wire [31:0]               pc_plus4Et
+  output wire                          pc_srcDt,
+  output wire [31:0]                   pc_nextt,
+  output wire [31:0]                   pc_plus4Et
     );
 
-   parameter PC_HASH_BITS = PHT_INDEX_BITS;
    
    // Internal Signals
    wire [31:0] pc_next;
@@ -63,14 +70,9 @@ parameter PHT_INDEX_BITS = 10
    wire [31:0] pc_branchM;
    wire [31:0] pc_jumpD;
    wire [31:0] pc_next_temp;
-   wire [PC_HASH_BITS-1:0] pc_hashingD;
-//   wire [PC_HASH_BITS-1:0] pc_hashingE;
-   wire [PHT_INDEX_BITS-1:0] PHT_indexD;
-//   wire [PHT_INDEX_BITS-1:0] PHT_indexE;
-//   wire                       branchE;
-//   wire                       actually_takenE;
-//   wire                       predict_resultE;
-   // wire        equalD;
+   wire [LOCAL_PC_HASH_BITS-1:0] pc_hashingD;
+   wire [PHT_INDEX_BITS-1:0] global_PHT_indexD; 
+   wire [PHT_INDEX_BITS-1:0] local_PHT_indexD;
    wire [31:0] sign_immD;
    wire [31:0] sign_immE;
    wire [31:0] sl2_immD;
@@ -101,8 +103,13 @@ parameter PHT_INDEX_BITS = 10
    wire        zero;
    wire        predict_takeD;
    wire        predict_takeE;
+   wire        local_predict_takeD;
+   wire        local_predict_takeE;
+   wire        global_predict_takeD;
+   wire        global_predict_takeE;
    wire        clear_id_ex;
    wire [31:0] pc_plus4E;
+   wire        predict_resultE;
    //wire [PHT_INDEX_BITS-1:0] PHT_indexD;
    
 //   wire [31:0] pc_plus4M;
@@ -163,15 +170,44 @@ assign pc_nextt = pc_next;
    .d(instr),
    .q(instrD));
 
-   flopenrc #(1) prdictor_flopD(
+   flopenrc #(1) predictor_flopD(
    .clk(clk),
    .rst(rst),
    .en(~stallD),
    .clear(pc_srcD || jumpD || ~predict_resultE),
    .d(predict_takeF),
    .q(predict_takeD));
+   flopenrc #(1) local_predictor_flopD(
+                                 .clk(clk),
+                                 .rst(rst),
+                                 .en(~stallD),
+                                 .clear(pc_srcD || jumpD || ~predict_resultE),
+                                 .d(local_predict_takeF),
+                                 .q(local_predict_takeD));
+   flopenrc #(1) global_predictor_flopD(
+                                 .clk(clk),
+                                 .rst(rst),
+                                 .en(~stallD),
+                                 .clear(pc_srcD || jumpD || ~predict_resultE),
+                                 .d(global_predict_takeF),
+                                 .q(global_predict_takeD));
+   flopenrc #(LOCAL_PC_HASH_BITS) local_BHT_index_flopD(
+                                            .clk(clk),
+                                            .rst(rst),
+                                            .en(~stallD),
+                                            .clear(pc_srcD || jumpD || ~predict_resultE),
+                                            .d(pc_hashingF),
+                                            .q(pc_hashingD));
 
-   flopenrc #(PHT_INDEX_BITS) PHT_index_flopD(clk, rst, ~stallD, pc_srcD||jumpD||~predict_resultE, PHT_indexF, PHT_indexD);
+   flopenrc #(PHT_INDEX_BITS) local_PHT_index_flopD(
+                                              .clk(clk),
+                                              .rst(rst),
+                                              .en(~stallD),
+                                              .clear(pc_srcD || jumpD || ~predict_resultE),
+                                              .d(local_PHT_indexF),
+                                              .q(local_PHT_indexD));
+   
+   flopenrc #(PHT_INDEX_BITS) global_PHT_index_flopD(clk, rst, ~stallD, pc_srcD||jumpD||~predict_resultE, global_PHT_indexF, global_PHT_indexD);
 
    //-------------------------------------------
 
@@ -247,9 +283,11 @@ assign pc_nextt = pc_next;
    floprc #(32) flop_pc_branchD(clk, rst, clear_id_ex, pc_branchD, pc_branchE);
    floprc #(32) flop_pc_plus4D(clk, rst, clear_id_ex, pc_plus4D, pc_plus4E);
    floprc #(1) flop_predict_takeD(clk, rst, clear_id_ex, predict_takeD, predict_takeE);
-   floprc #(PHT_INDEX_BITS) flop_PHT_indexD(clk, rst, clear_id_ex, PHT_indexD, PHT_indexE);
-   
-
+   floprc #(1) flop_local_predict_takeD(clk, rst, clear_id_ex, local_predict_takeD, local_predict_takeE);
+   floprc #(1) flop_global_predict_takeD(clk, rst, clear_id_ex, global_predict_takeD, global_predict_takeE);
+    floprc #(PHT_INDEX_BITS) flop_global_PHT_indexD(clk, rst, clear_id_ex, global_PHT_indexD, global_PHT_indexE);
+   floprc #(PHT_INDEX_BITS) flop_local_PHT_indexD(clk, rst, clear_id_ex, local_PHT_indexD, local_PHT_indexE);
+   floprc #(LOCAL_PC_HASH_BITS) flop_BHT_indexD(clk, rst, clear_id_ex, pc_hashingD, pc_hashingE);
    //------------------------------------------
 
    //----------------EX------------------------
@@ -266,6 +304,8 @@ assign pc_nextt = pc_next;
    //   0         x           x       1
    //   1         1           1       1
    //   1         0           0       1
+   assign global_predict_resultE = (branchE && (global_predict_takeE == actually_takenE)) || (~branchE);
+   assign local_predict_resultE = (branchE && (local_predict_takeE == actually_takenE)) || (~branchE);
    assign predict_resultE = (branchE && (predict_takeE == actually_takenE)) || (~branchE);
    //--------------Registers------------------
    flopr #(32) flop_aluE(clk, rst, alu_outE, alu_outM);
