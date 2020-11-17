@@ -1,7 +1,6 @@
 `timescale 1ns / 1ps
 module datapath #(
-parameter PC_HASH_BITS = 3,
-parameter PHT_INDEX_BITS = 7
+parameter PHT_INDEX_BITS = 10
 )(
   input logic                      clk,
   input logic                      rst,
@@ -23,7 +22,6 @@ parameter PHT_INDEX_BITS = 7
   input logic [1:0]                forward_AE,
   input logic [1:0]                forward_BE,
   input logic                      predict_takeF,
-  input logic [PC_HASH_BITS-1:0]   pc_hashingF,
   input logic [PHT_INDEX_BITS-1:0] PHT_indexF,
   output wire [31:0]               pcF,
   output wire [31:0]               alu_outM,
@@ -42,17 +40,18 @@ parameter PHT_INDEX_BITS = 7
   output wire                      reg_writeM,
   output wire                      reg_writeW,
   output wire [31:0]               instrD,
-  output wire [PC_HASH_BITS-1:0]   pc_hashingE,
-  output wire [PHT_INDEX_BITS-1:0] PHT_indexE,
   output wire                      predict_resultE,
   output wire                      actually_takenE,
   output wire                      branchE,
+  output wire [PHT_INDEX_BITS-1:0] PHT_indexE,
   // DEBUG
-  output wire pc_srcDt,
-  output wire [31:0] pc_nextt,
-  output wire [31:0] pc_plus4Et
+  output wire                      pc_srcDt,
+  output wire [31:0]               pc_nextt,
+  output wire [31:0]               pc_plus4Et
     );
 
+   parameter PC_HASH_BITS = PHT_INDEX_BITS;
+   
    // Internal Signals
    wire [31:0] pc_next;
   // wire [31:0] pcF_temp;
@@ -104,6 +103,8 @@ parameter PHT_INDEX_BITS = 7
    wire        predict_takeE;
    wire        clear_id_ex;
    wire [31:0] pc_plus4E;
+   //wire [PHT_INDEX_BITS-1:0] PHT_indexD;
+   
 //   wire [31:0] pc_plus4M;
    
    
@@ -170,21 +171,7 @@ assign pc_nextt = pc_next;
    .d(predict_takeF),
    .q(predict_takeD));
 
-   flopenrc #(PC_HASH_BITS) BHT_index_flopD(
-   .clk(clk),
-   .rst(rst),
-   .en(~stallD),
-   .clear(pc_srcD || jumpD || ~predict_resultE),
-   .d(pc_hashingF),
-   .q(pc_hashingD));
-
-   flopenrc #(PHT_INDEX_BITS) PHT_index_flopD(
-   .clk(clk),
-   .rst(rst),
-   .en(~stallD),
-   .clear(pc_srcD || jumpD || ~predict_resultE),
-   .d(PHT_indexF),
-   .q(PHT_indexD));
+   flopenrc #(PHT_INDEX_BITS) PHT_index_flopD(clk, rst, ~stallD, pc_srcD||jumpD||~predict_resultE, PHT_indexF, PHT_indexD);
 
    //-------------------------------------------
 
@@ -239,12 +226,9 @@ assign pc_nextt = pc_next;
    .out(pc_branchD)
    );
    /* verilator lint_on PINMISSING */
-   
    assign pc_jumpD = {pc_plus4D[31:28], instrD[25:0], 2'b00};
-   
    //-----------Register----------------------
    assign clear_id_ex = flushE || ~predict_resultE;
-   
    floprc #(1) flop_reg_writeD(clk, rst, clear_id_ex, reg_writeD, reg_writeE);
    floprc #(1) flop_mem_to_regD(clk, rst, clear_id_ex, mem_to_regD, mem_to_regE);
    floprc #(1) flop_mem_writeD(clk, rst, clear_id_ex, mem_writeD, mem_writeE);
@@ -262,11 +246,10 @@ assign pc_nextt = pc_next;
    floprc #(1) flop_branchD(clk, rst, clear_id_ex, branchD, branchE);
    floprc #(32) flop_pc_branchD(clk, rst, clear_id_ex, pc_branchD, pc_branchE);
    floprc #(32) flop_pc_plus4D(clk, rst, clear_id_ex, pc_plus4D, pc_plus4E);
-   floprc #(PHT_INDEX_BITS) flop_PHT_indexD(clk, rst, clear_id_ex, PHT_indexD, PHT_indexE);
-   floprc #(PC_HASH_BITS) flop_BHT_indexD(clk, rst, clear_id_ex, pc_hashingD, pc_hashingE);
    floprc #(1) flop_predict_takeD(clk, rst, clear_id_ex, predict_takeD, predict_takeE);
-
+   floprc #(PHT_INDEX_BITS) flop_PHT_indexD(clk, rst, clear_id_ex, PHT_indexD, PHT_indexE);
    
+
    //------------------------------------------
 
    //----------------EX------------------------
@@ -291,17 +274,9 @@ assign pc_nextt = pc_next;
    flopr #(1) flop_mem_writeE(clk, rst, mem_writeE, mem_writeM);
    flopr #(32) flop_write_dataE(clk, rst, write_dataE, write_dataM);
    flopr #(5) flop_write_regE(clk, rst, write_regE, write_regM);
-//   flopr #(1) flop_predict_resultE(clk, rst, predict_resultE, predict_resultM);
-//   flopr #(PC_HASH_BITS) flop_BHT_indexE(clk, rst, pc_hashingE, pc_hashingM);
-//   flopr #(PHT_INDEX_BITS) flop_PHT_indexE(clk, rst, PHT_indexE, PHT_indexM);
-//   flopr #(1) flop_actually_takenE(clk, rst, actually_takenE, actually_takenM);
-//   flopr #(1) flop_branchE(clk, rst, branchE, branchM);
-//   flopr #(32) flop_pc_branchE(clk, rst, pc_branchE, pc_branchM);
-//   flopr #(32) flop_pc_plus4E(clk, rst, pc_plus4E, pc_plus4M);
    //------------------------------------------
 
    //-----------------MEM-----------------------
-   
    //----------------Registers-----------------
    flopr #(1) flop_reg_writeM(clk, rst, reg_writeM, reg_writeW);
    flopr #(1) flop_mem_to_regM(clk, rst, mem_to_regM, mem_to_regW);

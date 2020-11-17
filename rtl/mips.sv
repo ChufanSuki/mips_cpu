@@ -1,6 +1,5 @@
 module mips #(
-parameter PC_HASH_BITS = 3,
-parameter PHT_INDEX_BITS = 7
+parameter PHT_INDEX_BITS = 10
 )(
   input logic        clk,
   input logic        rst,
@@ -36,7 +35,8 @@ parameter PHT_INDEX_BITS = 7
   // DEBUG END
   
 	);
-
+   parameter PC_HASH_BITS = PHT_INDEX_BITS;
+   
    //-----------internal signals--------
    wire [31:0]      instrD;
    wire             reg_writeD;
@@ -110,7 +110,6 @@ parameter PHT_INDEX_BITS = 7
     .read_dataM(read_data),
     .instr(instr),
     .predict_takeF(predict_takeF),
-    .pc_hashingF(pc_hashingF),
     .PHT_indexF(PHT_indexF),
     //output
     .alu_outM(alu_outM),
@@ -130,11 +129,10 @@ parameter PHT_INDEX_BITS = 7
     .reg_writeM(reg_writeM),
     .reg_writeW(reg_writeW),
     .instrD(instrD),
-    .pc_hashingE(pc_hashingE),
-    .PHT_indexE(PHT_indexE),
     .predict_resultE(predict_resultE),
     .actually_takenE(actually_takenE),
     .branchE(branchE),
+    .PHT_indexE(PHT_indexE),
     // DEBUG
     .pc_srcDt(pc_srcDt),
     .pc_nextt(pc_nextt),
@@ -176,17 +174,15 @@ parameter PHT_INDEX_BITS = 7
         .stallD(stallD),
         .flushE(flushE));
 
-   branch_predict_local branch_predictor(
+   branch_predict_global branch_predictor(
    .clk(clk),
    .rst(rst),
    .pcF(pcF),
    .branchE(branchE),
-   .BHT_indexE(pc_hashingE),
    .PHT_indexE(PHT_indexE),
    .actually_takenE(actually_takenE),
    .predict_resultE(predict_resultE),
    .predict_takeF(predict_takeF),
-   .pc_hashingF(pc_hashingF),
    .PHT_indexF(PHT_indexF)
    );
 

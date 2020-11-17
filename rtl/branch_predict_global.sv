@@ -5,56 +5,59 @@ typedef enum logic [$clog2(4)-1:0] {
    weakly_taken
 } predict_state_t;
 
-module branch_predict_local #(
-parameter PHT_INDEX_BITS = 7,
-parameter BHT_INDEX_BITS = 3,
-parameter BHR_BITS = 4,
-parameter PC_TAIL = 2
+module branch_predict_global #(
+parameter PHT_INDEX_BITS = 10
 )(
   input logic                      clk,
   input logic                      rst,
   input logic [31:0]               pcF,
   input logic                      branchE,
-  input logic [BHT_INDEX_BITS-1:0] BHT_indexE,
   input logic [PHT_INDEX_BITS-1:0] PHT_indexE,
   input logic                      actually_takenE,
   input logic                      predict_resultE,
   output wire                      predict_takeF,
-  output wire [BHT_INDEX_BITS-1:0] pc_hashingF,
   output wire [PHT_INDEX_BITS-1:0] PHT_indexF
   );
-   
-  // BHR = {PC[PC_HEAD:PC_TAIL], BHT[PC_HASH]}
-   parameter PC_SEGMENT_LENGTH = PHT_INDEX_BITS - BHR_BITS;
-   parameter PC_HEAD = PC_TAIL + PC_SEGMENT_LENGTH - 1;
-   parameter PC_HASH_BITS = BHT_INDEX_BITS;
+
+   parameter GHR_BITS = PHT_INDEX_BITS;
+  // index of PHT = PC_HASHING XOR GHR
+   parameter PC_HASH_BITS = GHR_BITS;
   // States
    parameter PHR_BITS = 2;
-  // parameter strongly_not_taken = 2'b00;
-  // parameter weakly_not_taken = 2'b01;
-  // parameter weakly_taken = 2'b11;
-  // parameter strongly_taken = 2'b10;
-   
 
-   reg [BHR_BITS-1:0] BHT [(1<<BHT_INDEX_BITS)-1:0];
    reg [PHR_BITS-1:0] PHT[(1<<PHT_INDEX_BITS)-1:0];
-
+   reg [GHR_BITS-1:0] GHR;
+   reg [GHR_BITS-1:0] RGHR; // Retired GHR
    // Internal Signals
    integer            i;
    integer            j;
-   wire [BHR_BITS-1:0] BHRF;
+   wire [PC_HASH_BITS-1:0] pc_hashingF;
+   // wire                predict_takeF;
+   
    
    // Hashing
    assign pc_hashingF = pcF[PC_HASH_BITS-1:0]; // TODO: More Fancy Hashing Function 
-   //------------Predict When Fetch----------------
-   assign BHRF = BHT[pc_hashingF];
-   assign PHT_indexF = {pcF[PC_HEAD:PC_TAIL], BHRF};
+   //------------Predict & Update When Fetch----------------
+   assign PHT_indexF = pc_hashingF ^ GHR;
    assign predict_takeF = PHT[PHT_indexF][1];
+   always @(posedge clk) begin
+      if (rst) begin
+         for (i= 0; i < GHR_BITS; i = i + 1) begin
+            GHR[i] <= 0;
+         end
+      end
+      else if (!predict_resultE) begin
+         GHR <= RGHR;
+      end
+      else  begin
+         GHR <= {GHR[GHR_BITS-2:0], predict_takeF};
+      end
+   end
    //-----------Execute when Decode----------------
    // TODO: Done In Datapath
    //-----------Examine when Execute---------------
    // TODO: Done In Datapath
-   //-----------Update When MEMORY--------------------
+   //-----------Remedy When MEMORY--------------------
    //-----------Training PHT-------------------------
    always @(posedge clk) begin
       if (rst) begin
@@ -92,16 +95,16 @@ parameter PC_TAIL = 2
       end
    end // always @ (posedge clk)
    
-   //------------Update BHT------------------
+   //------------Update RGHR------------------
    always @(posedge clk) begin
       if (rst) begin
-         for (j = 0; j < (1<<BHT_INDEX_BITS); j = j + 1) begin
-            BHT[j] <= 0;
+         for (j = 0; j < GHR_BITS; j = j + 1) begin
+            RGHR[j] <= 0;
          end
       end
       else if (branchE) begin
-         BHT[BHT_indexE] <= {BHT[BHT_indexE][BHR_BITS-2:0], actually_takenE};
+         RGHR <= {RGHR[GHR_BITS-2:0], actually_takenE};
       end
    end
-endmodule // branch_predict_local
+endmodule // branch_predict_global
 
