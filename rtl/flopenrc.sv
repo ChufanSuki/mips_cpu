@@ -12,14 +12,11 @@ module flopenrc
       if(rst) begin
          q <= 0;
       end
-      else if(clear) begin
+      else if(clear && en) begin // Take care of branch predict taken and stall happen at the same time 
          q <= 0;
       end
       else if(en) begin
          q <= d;
-      end
-      else begin
-         q <= q;
       end
    end
 endmodule

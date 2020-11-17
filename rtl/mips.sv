@@ -26,7 +26,13 @@ parameter PHT_INDEX_BITS = 7
   output wire [4:0]  write_regEt,
   output wire [4:0]  write_regMt,
   output wire [4:0]  write_regWt,
-  output wire [31:0] instrDt
+  output wire [31:0] instrDt,
+  output wire pc_srcDt,
+  output wire [31:0] pc_nextt,
+  output wire predict_takeFt,
+  output wire predict_resultMt,
+  output wire actually_takenMt,
+  output wire [31:0] pc_plus4Mt
   // DEBUG END
   
 	);
@@ -78,13 +84,15 @@ parameter PHT_INDEX_BITS = 7
    assign write_regMt = write_regM;
    assign write_regWt = write_regW;
    assign instrDt = instrD; 
-   
+   assign predict_takeFt = predict_takeF;
+   assign predict_resultMt = predict_resultM;
+   assign actually_takenMt = actually_takenM;
    //-----------------------------------
    
 	datapath mips_datapath(
-		.clk(clk),
+    .clk(clk),
     .rst(rst),
-		.reg_writeD(reg_writeD),
+    .reg_writeD(reg_writeD),
     .mem_to_regD(mem_to_regD),
     .mem_writeD(mem_writeD),
     .alu_controlD(alu_controlD),
@@ -126,7 +134,11 @@ parameter PHT_INDEX_BITS = 7
     .PHT_indexM(PHT_indexM),
     .predict_resultM(predict_resultM),
     .actually_takenM(actually_takenM),
-    .branchM(branchM)
+    .branchM(branchM),
+    // DEBUG
+    .pc_srcDt(pc_srcDt),
+    .pc_nextt(pc_nextt),
+    .pc_plus4Mt(pc_plus4Mt)
 );
 
     controller Control(

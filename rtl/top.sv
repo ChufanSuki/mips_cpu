@@ -21,7 +21,13 @@ module top(
   output  wire [4:0]       write_regE,
   output wire [4:0]       write_regM,
   output wire [4:0]       write_regW,
-  output wire [31:0]      instrD
+  output wire [31:0]      instrD,
+  output wire pc_srcD,
+  output wire [31:0] pc_next,
+  output wire predict_takeF,
+  output wire predict_resultM,
+  output wire actually_takenM,
+  output wire [31:0] pc_plus4M
 	);
 	
   wire [31:0] pcF;
@@ -52,7 +58,13 @@ module top(
     .write_regEt(write_regE),
     .write_regMt(write_regM),
     .write_regWt(write_regW),
-    .instrDt(instrD)
+    .instrDt(instrD),
+    .pc_srcDt(pc_srcD),
+    .pc_nextt(pc_next),
+    .predict_takeFt(predict_takeF),
+    .predict_resultMt(predict_resultM),
+    .actually_takenMt(actually_takenM),
+    .pc_plus4Mt(pc_plus4M)
      );
 	
 	imem inst_ram (

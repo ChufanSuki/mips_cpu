@@ -62,7 +62,7 @@ parameter PC_TAIL = 2
             PHT[i] = weakly_taken;
          end
       end
-      else begin
+      else if (branchM) begin
          case (PHT[PHT_indexM])
            strongly_not_taken: begin
               if (predict_resultM)
