@@ -1,8 +1,8 @@
 `timescale 1ns / 1ps
-parameter PC_HASH_BITS = 3;// TODO: refactor in define file
-parameter PHT_INDEX_BITS = 7;
-
-module datapath(
+module datapath #(
+parameter PC_HASH_BITS = 3,
+parameter PHT_INDEX_BITS = 7
+)(
   input logic                      clk,
   input logic                      rst,
   input logic [31:0]               instr,

@@ -1,4 +1,7 @@
-module mips(
+module mips #(
+parameter PC_HASH_BITS = 3,
+parameter PHT_INDEX_BITS = 7
+)(
   input logic        clk,
   input logic        rst,
   input logic [31:0] read_data,
