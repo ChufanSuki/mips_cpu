@@ -1,28 +1,30 @@
 module mips(
-  input logic clk,
-  input logic rst,
+  input logic        clk,
+  input logic        rst,
   input logic [31:0] read_data,
   input logic [31:0] instr,
   output wire [31:0] write_data,
-  output wire [31:0] pc,
+  output wire [31:0] pcF,
   output wire        mem_writeM,
   output wire [31:0] alu_outM,
-  output wire stallD, // DEBUG
-  output wire branchD, // DEBUG
-  output wire forward_AD,
-  output wire forward_BD,
-  output wire [1:0] forward_AE,
-  output wire [1:0] forward_BE,
-  output wire stallF,
-  output wire flushE,
-  output wire [4:0] rsEt,
-  output wire [4:0] rtEt,
-  output wire [4:0] rsDt,
-  output wire [4:0] rtDt,
-   output  wire [4:0]       write_regEt,
-   output wire [4:0]       write_regMt,
-   output wire [4:0]       write_regWt,
-   output wire [31:0] instrDt
+  // DEBUG
+  output wire        stallD,
+  output wire        branchD,
+  output wire        forward_AD,
+  output wire        forward_BD,
+  output wire [1:0]  forward_AE,
+  output wire [1:0]  forward_BE,
+  output wire        stallF,
+  output wire        flushE,
+  output wire [4:0]  rsEt,
+  output wire [4:0]  rtEt,
+  output wire [4:0]  rsDt,
+  output wire [4:0]  rtDt,
+  output wire [4:0]  write_regEt,
+  output wire [4:0]  write_regMt,
+  output wire [4:0]  write_regWt,
+  output wire [31:0] instrDt
+  // DEBUG END
   
 	);
 
@@ -43,7 +45,6 @@ module mips(
    // wire             flushE;
    // wire [1:0]       forward_AE;
    // wire [1:0]       forward_BE;
-   wire [31:0]      pcF;
    wire [31:0]      write_dataM;
    wire [4:0]       rsD;
    wire [4:0]       rtD;
@@ -57,7 +58,15 @@ module mips(
    wire             reg_writeE;
    wire             reg_writeM;
    wire             reg_writeW;
-                  
+   wire             predict_takeF;
+   wire [PC_HASH_BITS-1:0] pc_hashingF;
+   wire [PHT_INDEX_BITS-1:0] PHT_indexF;
+   wire [PC_HASH_BITS-1:0]   pc_hashingM;
+   wire [PHT_INDEX_BITS-1:0] PHT_indexM;
+   wire             predict_resultM;
+   wire             actually_takenM;
+   wire             branchM;
+   
    assign rsDt = rsD;
    assign rtDt = rtD;
    assign rsEt = rsE;
@@ -89,10 +98,13 @@ module mips(
     .forward_BE(forward_BE),
     .read_dataM(read_data),
     .instr(instr),
+    .predict_takeF(predict_takeF),
+    .pc_hashingF(pc_hashingF),
+    .PHT_indexF(PHT_indexF),
     //output
     .alu_outM(alu_outM),
     .write_dataM(write_data),
-    .pcF(pc),
+    .pcF(pcF),
     .mem_writeM(mem_writeM),
     .rsD(rsD),
     .rtD(rtD),
@@ -106,7 +118,13 @@ module mips(
     .reg_writeE(reg_writeE),
     .reg_writeM(reg_writeM),
     .reg_writeW(reg_writeW),
-    .instrD(instrD));
+    .instrD(instrD),
+    .pc_hashingM(pc_hashingM),
+    .PHT_indexM(PHT_indexM),
+    .predict_resultM(predict_resultM),
+    .actually_takenM(actually_takenM),
+    .branchM(branchM)
+);
 
     controller Control(
 		.op(instrD[31:26]),
@@ -142,5 +160,20 @@ module mips(
         .stallF(stallF),
         .stallD(stallD),
         .flushE(flushE));
+
+   branch_predict_local branch_predictor(
+   .clk(clk),
+   .rst(rst),
+   .pcF(pcF),
+   .branchM(branchM),
+   .BHT_indexM(pc_hashingM),
+   .PHT_indexM(PHT_indexM),
+   .actually_takenM(actually_takenM),
+   .predict_resultM(predict_resultM),
+   .predict_takeF(predict_takeF),
+   .pc_hashingF(pc_hashingF),
+   .PHT_indexF(PHT_indexF)
+   );
+
 
 endmodule

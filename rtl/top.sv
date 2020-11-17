@@ -1,63 +1,62 @@
 `timescale 1ns / 1ps
 module top(
 	input logic         clk,
-    input logic         reset,
+  input logic         reset,
 	output wire [31:0] write_data,
-    output wire [31:0] data_addr,
+  output wire [31:0] data_addr,
 	output wire        mem_write,
 	output wire [31:0] instr, // DEBUG
 	output wire stallD, // DEBUG
 	output wire branchD, // DEBUG
-	  output wire forward_AD,
+	output wire forward_AD,
   output wire forward_BD,
   output wire [1:0] forward_AE,
   output wire [1:0] forward_BE,
   output wire stallF,
   output wire flushE,
-    output wire [4:0] rsE,
+  output wire [4:0] rsE,
   output wire [4:0] rtE,
   output wire [4:0] rsD,
   output wire [4:0] rtD,
-   output  wire [4:0]       write_regE,
-   output wire [4:0]       write_regM,
-   output wire [4:0]       write_regW,
-   output wire [31:0]      instrD
-   
+  output  wire [4:0]       write_regE,
+  output wire [4:0]       write_regM,
+  output wire [4:0]       write_regW,
+  output wire [31:0]      instrD
 	);
 	
-  wire [31:0] pc;
+  wire [31:0] pcF;
 	wire [31:0] read_data;
 	// wire [31:0] instr;
 	
 	mips mips(
 		.clk(clk),
-        .rst(reset),
+    .rst(reset),
 		.read_data(read_data),
 		.instr(instr),
 		.write_data(write_data),
-		.pc(pc),
+		.pcF(pcF),
 		.mem_writeM(mem_write),
 		.alu_outM(data_addr),
 		.stallD(stallD),
 		.branchD(branchD),
 		.forward_AD(forward_AD),
-        .forward_BD(forward_BD),
-        .forward_AE(forward_AE),
-        .forward_BE(forward_BE),
-        .stallF(stallF),
-        .flushE(flushE),
-        .rsEt(rsE),
-         .rsDt(rsD),
-         .rtEt(rtE),
-         .rtDt(rtD),
-         .write_regEt(write_regE),
-         .write_regMt(write_regM),
-         .write_regWt(write_regW),
-         .instrDt(instrD)
-         );
+    .forward_BD(forward_BD),
+    .forward_AE(forward_AE),
+    .forward_BE(forward_BE),
+    .stallF(stallF),
+    .flushE(flushE),
+    .rsEt(rsE),
+    .rsDt(rsD),
+    .rtEt(rtE),
+    .rtDt(rtD),
+    .write_regEt(write_regE),
+    .write_regMt(write_regM),
+    .write_regWt(write_regW),
+    .instrDt(instrD)
+     );
 	
 	imem inst_ram (
-                 .a(pc[7:2]),
+                 .a(pcF[7:2]),
                  .rd(instr));
    
 	/*
