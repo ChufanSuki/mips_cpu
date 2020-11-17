@@ -14,11 +14,11 @@ parameter PC_TAIL = 2
   input logic                      clk,
   input logic                      rst,
   input logic [31:0]               pcF,
-  input logic                      branchM,
-  input logic [BHT_INDEX_BITS-1:0] BHT_indexM,
-  input logic [PHT_INDEX_BITS-1:0] PHT_indexM,
-  input logic                      actually_takenM,
-  input logic                      predict_resultM,
+  input logic                      branchE,
+  input logic [BHT_INDEX_BITS-1:0] BHT_indexE,
+  input logic [PHT_INDEX_BITS-1:0] PHT_indexE,
+  input logic                      actually_takenE,
+  input logic                      predict_resultE,
   output wire                      predict_takeF,
   output wire [BHT_INDEX_BITS-1:0] pc_hashingF,
   output wire [PHT_INDEX_BITS-1:0] PHT_indexF
@@ -62,31 +62,31 @@ parameter PC_TAIL = 2
             PHT[i] = weakly_taken;
          end
       end
-      else if (branchM) begin
-         case (PHT[PHT_indexM])
+      else if (branchE) begin
+         case (PHT[PHT_indexE])
            strongly_not_taken: begin
-              if (predict_resultM)
-                PHT[PHT_indexM] <= weakly_not_taken;
+              if (predict_resultE)
+                PHT[PHT_indexE] <= weakly_not_taken;
               else
-                PHT[PHT_indexM] <= strongly_not_taken;
+                PHT[PHT_indexE] <= strongly_not_taken;
            end
            weakly_not_taken: begin
-              if (predict_resultM)
-                PHT[PHT_indexM] <= weakly_taken;
+              if (predict_resultE)
+                PHT[PHT_indexE] <= weakly_taken;
               else
-                PHT[PHT_indexM] <= strongly_not_taken;
+                PHT[PHT_indexE] <= strongly_not_taken;
            end
            weakly_taken: begin
-              if (predict_resultM)
-                PHT[PHT_indexM] <= strongly_taken;
+              if (predict_resultE)
+                PHT[PHT_indexE] <= strongly_taken;
               else
-                PHT[PHT_indexM] <= weakly_not_taken;
+                PHT[PHT_indexE] <= weakly_not_taken;
            end
            strongly_taken: begin
-              if (predict_resultM)
-                PHT[PHT_indexM] <= strongly_taken;
+              if (predict_resultE)
+                PHT[PHT_indexE] <= strongly_taken;
               else
-                PHT[PHT_indexM] <= weakly_taken;
+                PHT[PHT_indexE] <= weakly_taken;
            end
          endcase // case (PHT[PHT_indexM])
       end
@@ -99,8 +99,8 @@ parameter PC_TAIL = 2
             BHT[j] <= 0;
          end
       end
-      else if (branchM) begin
-         BHT[BHT_indexM] <= {BHT[BHT_indexM][BHR_BITS-2:0], actually_takenM};
+      else if (branchE) begin
+         BHT[BHT_indexE] <= {BHT[BHT_indexE][BHR_BITS-2:0], actually_takenE};
       end
    end
 endmodule // branch_predict_local

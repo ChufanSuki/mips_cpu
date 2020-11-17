@@ -1,0 +1,30 @@
+# compile verilog/system verilog design source files
+sv xil_defaultlib  \
+"../../../../../rtl/adder.sv" \
+"../../../../../rtl/alu.sv" \
+"../../../../../rtl/alu_decoder.sv" \
+"../../../../../rtl/branch_predict_local.sv" \
+"../../../../../rtl/controller.sv" \
+"../../../../../rtl/datapath.sv" \
+"../../../../../rtl/dmem.sv" \
+"../../../../../rtl/flopenr.sv" \
+"../../../../../rtl/flopenrc.sv" \
+"../../../../../rtl/flopr.sv" \
+"../../../../../rtl/floprc.sv" \
+"../../../../../rtl/hazard.sv" \
+"../../../../../rtl/imem.sv" \
+"../../../../../rtl/main_decoder.sv" \
+"../../../../../rtl/mips.sv" \
+"../../../../../rtl/mux2.sv" \
+"../../../../../rtl/mux3.sv" \
+"../../../../../rtl/regfile.sv" \
+"../../../../../rtl/sign_extend.sv" \
+"../../../../../rtl/sl2.sv" \
+"../../../../../rtl/top.sv" \
+"../../../../../sim/testbench.sv" \
+
+# compile glbl module
+verilog xil_defaultlib "glbl.v"
+
+# Do not sort compile order
+nosort

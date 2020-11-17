@@ -25,9 +25,9 @@ module top(
   output wire pc_srcD,
   output wire [31:0] pc_next,
   output wire predict_takeF,
-  output wire predict_resultM,
-  output wire actually_takenM,
-  output wire [31:0] pc_plus4M
+  output wire predict_resultE,
+  output wire actually_takenE,
+  output wire [31:0] pc_plus4E
 	);
 	
   wire [31:0] pcF;
@@ -62,9 +62,9 @@ module top(
     .pc_srcDt(pc_srcD),
     .pc_nextt(pc_next),
     .predict_takeFt(predict_takeF),
-    .predict_resultMt(predict_resultM),
-    .actually_takenMt(actually_takenM),
-    .pc_plus4Mt(pc_plus4M)
+    .predict_resultEt(predict_resultE),
+    .actually_takenEt(actually_takenE),
+    .pc_plus4Et(pc_plus4E)
      );
 	
 	imem inst_ram (

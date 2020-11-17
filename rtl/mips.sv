@@ -30,9 +30,9 @@ parameter PHT_INDEX_BITS = 7
   output wire pc_srcDt,
   output wire [31:0] pc_nextt,
   output wire predict_takeFt,
-  output wire predict_resultMt,
-  output wire actually_takenMt,
-  output wire [31:0] pc_plus4Mt
+  output wire predict_resultEt,
+  output wire actually_takenEt,
+  output wire [31:0] pc_plus4Et
   // DEBUG END
   
 	);
@@ -70,11 +70,11 @@ parameter PHT_INDEX_BITS = 7
    wire             predict_takeF;
    wire [PC_HASH_BITS-1:0] pc_hashingF;
    wire [PHT_INDEX_BITS-1:0] PHT_indexF;
-   wire [PC_HASH_BITS-1:0]   pc_hashingM;
-   wire [PHT_INDEX_BITS-1:0] PHT_indexM;
-   wire             predict_resultM;
-   wire             actually_takenM;
-   wire             branchM;
+   wire [PC_HASH_BITS-1:0]   pc_hashingE;
+   wire [PHT_INDEX_BITS-1:0] PHT_indexE;
+   wire             predict_resultE;
+   wire             actually_takenE;
+   wire             branchE;
    
    assign rsDt = rsD;
    assign rtDt = rtD;
@@ -85,8 +85,8 @@ parameter PHT_INDEX_BITS = 7
    assign write_regWt = write_regW;
    assign instrDt = instrD; 
    assign predict_takeFt = predict_takeF;
-   assign predict_resultMt = predict_resultM;
-   assign actually_takenMt = actually_takenM;
+   assign predict_resultEt = predict_resultE;
+   assign actually_takenEt = actually_takenE;
    //-----------------------------------
    
 	datapath mips_datapath(
@@ -130,15 +130,15 @@ parameter PHT_INDEX_BITS = 7
     .reg_writeM(reg_writeM),
     .reg_writeW(reg_writeW),
     .instrD(instrD),
-    .pc_hashingM(pc_hashingM),
-    .PHT_indexM(PHT_indexM),
-    .predict_resultM(predict_resultM),
-    .actually_takenM(actually_takenM),
-    .branchM(branchM),
+    .pc_hashingE(pc_hashingE),
+    .PHT_indexE(PHT_indexE),
+    .predict_resultE(predict_resultE),
+    .actually_takenE(actually_takenE),
+    .branchE(branchE),
     // DEBUG
     .pc_srcDt(pc_srcDt),
     .pc_nextt(pc_nextt),
-    .pc_plus4Mt(pc_plus4Mt)
+    .pc_plus4Et(pc_plus4Et)
 );
 
     controller Control(
@@ -180,11 +180,11 @@ parameter PHT_INDEX_BITS = 7
    .clk(clk),
    .rst(rst),
    .pcF(pcF),
-   .branchM(branchM),
-   .BHT_indexM(pc_hashingM),
-   .PHT_indexM(PHT_indexM),
-   .actually_takenM(actually_takenM),
-   .predict_resultM(predict_resultM),
+   .branchE(branchE),
+   .BHT_indexE(pc_hashingE),
+   .PHT_indexE(PHT_indexE),
+   .actually_takenE(actually_takenE),
+   .predict_resultE(predict_resultE),
    .predict_takeF(predict_takeF),
    .pc_hashingF(pc_hashingF),
    .PHT_indexF(PHT_indexF)

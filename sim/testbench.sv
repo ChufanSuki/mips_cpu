@@ -27,12 +27,12 @@ module testbench();
     wire pc_srcD;
     wire [31:0] pc_next;
     wire predict_takeF;
-    wire predict_resultM;
-    wire actually_takenM;
-    wire [31:0] pc_plus4M;
+    wire predict_resultE;
+    wire actually_takenE;
+    wire [31:0] pc_plus4E;
     //-------DEBUG END-----
 	top dut(clk,rst,writedata,dataadr,memwrite, instr, stallD, branchD, forward_AD, forward_BD, forward_AE, forward_BE, stallF, flushE, 
-	rsE, rtE, rsD, rtD, write_regE, write_regM, write_regW, instrD, pc_srcD, pc_next, predict_takeF, predict_resultM, actually_takenM, pc_plus4M);
+	rsE, rtE, rsD, rtD, write_regE, write_regM, write_regW, instrD, pc_srcD, pc_next, predict_takeF, predict_resultE, actually_takenE, pc_plus4E);
 
 	initial begin
 		rst = 0;
