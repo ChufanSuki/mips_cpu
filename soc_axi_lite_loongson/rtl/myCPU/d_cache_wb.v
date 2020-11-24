@@ -21,16 +21,17 @@ module d_cache_write_back (
     input          cache_data_data_ok
 );
    //-----------------Cache Parameter------------------------
-   parameter  INDEX_WIDTH  = 10, OFFSET_WIDTH = 2;
+   parameter INDEX_WIDTH  = 10;
+   parameter OFFSET_WIDTH = 2;
    localparam TAG_WIDTH    = 32 - INDEX_WIDTH - OFFSET_WIDTH;
    localparam CACHE_DEEPTH = 1 << INDEX_WIDTH;
    parameter IDLE = 2'b00, RM = 2'b01, WM = 2'b11;
    // Each line is 1 word
    //-----------------Internal Signals-----------------------
-   reg             cache_valid [CACHE_DEEPTH - 1 : 0];
-   reg             cache_dirty [CACHE_DEEPTH - 1 : 0];
-   reg [TAG_WIDTH-1:0] cache_tag   [CACHE_DEEPTH - 1 : 0];
-   reg [31:0]          cache_block [CACHE_DEEPTH - 1 : 0];
+   reg             cache_valid[CACHE_DEEPTH - 1 : 0];
+   reg             cache_dirty[CACHE_DEEPTH - 1 : 0];
+   reg [TAG_WIDTH-1:0] cache_tag[CACHE_DEEPTH - 1 : 0];
+   reg [31:0]          cache_block[CACHE_DEEPTH - 1 : 0];
    wire [OFFSET_WIDTH-1:0] offset;
    wire [INDEX_WIDTH-1:0]  index;
    wire [TAG_WIDTH-1:0]    tag;
@@ -40,23 +41,23 @@ module d_cache_write_back (
    wire [31:0]           c_block;
    wire                  hit;
    wire                  miss;
-   wire                  load;
+//   wire                  load;
    wire                  store;
    wire                  dirty;
    wire                  clean;
    reg [1:0]             state;
-   reg                   in_RM;
+   reg                   missed;
    wire                  isRM;
    wire                  isIDLE;
    reg                   addr_rcv;     
    wire                  read_finish;   
    wire                  isWM;
-   wire                  waddr_rcv;
+   reg                   waddr_rcv;
    wire                  write_finish;
    reg [TAG_WIDTH-1:0]   tag_save;
    reg [INDEX_WIDTH-1:0] index_save;
    wire [31:0]           write_cache_data;
-   wire [3;0]            write_mask;
+   wire [3:0]            write_mask;
    integer               t;
    //--------------------------------------------------------
    assign isIDLE = (state == IDLE);
@@ -67,10 +68,9 @@ module d_cache_write_back (
    assign c_dirty = cache_dirty[index];
    assign c_tag   = cache_tag  [index];
    assign c_block = cache_block[index];
-   assign hit = c_valid & (c_tag == tag);
+   assign hit = c_valid && (c_tag == tag);
    assign miss = ~hit;
-   assign store = cpu_data_req && cpu_data_wr;
-   assign load = cpu_data_req && ~cpu_data_wr;
+   assign store = cpu_data_wr;
    assign dirty = c_dirty;
    assign clean = ~dirty;
    assign isRM = state == RM;
@@ -78,24 +78,24 @@ module d_cache_write_back (
    assign isWM = state == WM;
    assign write_finish = isWM && cache_data_data_ok;
    assign cpu_data_rdata = hit ? c_block : cache_data_rdata;
-   assign cpu_data_addr_ok = (cqu_data_req && hit) || (cache_data_req && isRM && cache_data_addr_ok);
+   assign cpu_data_addr_ok = (cpu_data_req && hit) || (cache_data_req && isRM && cache_data_addr_ok);
    assign cpu_data_data_ok = (cpu_data_req && hit) || (isRM && cache_data_data_ok);
    assign cache_data_req = (isRM && ~addr_rcv) || (isWM && ~waddr_rcv);
    assign cache_data_wr = isWM;
    assign cache_data_size = cpu_data_size;
    assign cache_data_addr = cache_data_wr ? {c_tag, index, offset} : cpu_data_addr;
    assign cache_data_wdata = c_block;
-   assign write_mask = cpu_data_size == 2'b00 ?
-                       (cpu_data_addr[1] ? (cpu_data_addr[0] ? 4'b1000 : 4'b0100) :
-(cpu_data_addr[0] ? 4'b0010 : 4'b0001)) :
-                       (cpu_data_size == 2'b01 ? (cpu_data_addr[1] > 4'b1100 : 4'b0011) : 4'b1111);
+   assign write_mask = cpu_data_size==2'b00 ?
+                            (cpu_data_addr[1] ? (cpu_data_addr[0] ? 4'b1000 : 4'b0100):
+                                                (cpu_data_addr[0] ? 4'b0010 : 4'b0001)) :
+                            (cpu_data_size==2'b01 ? (cpu_data_addr[1] ? 4'b1100 : 4'b0011) : 4'b1111);
    assign write_cache_data = cache_block[index] & ~{{8{write_mask[3]}}, {8{write_mask[2]}}, {8{write_mask[1]}}, {8{write_mask[0]}}} |
                              cpu_data_wdata & {{8{write_mask[3]}}, {8{write_mask[2]}}, {8{write_mask[1]}}, {8{write_mask[0]}}};
    //------------------------------------------------------------
    always @(posedge clk, posedge rst) begin
       if(rst) begin
          state <= IDLE;
-         in_RM <= 1'b0;
+         missed <= 1'b0;
          tag_save <= 0;
          index_save <= 0;
          addr_rcv <= 0;
@@ -116,7 +116,7 @@ module d_cache_write_back (
                  else if (miss && clean)
                    state <= RM;
               end
-              in_RM <= 1'b0;
+              missed <= 1'b0;
            end
            WM: begin
               if (cache_data_data_ok)
@@ -125,7 +125,7 @@ module d_cache_write_back (
            RM: begin
               if (cache_data_data_ok)
                 state <= IDLE;
-              in_RM <= 1'b1;
+              missed <= 1'b1;
            end
          endcase // case (state)
 
@@ -135,14 +135,13 @@ module d_cache_write_back (
                       write_finish ? 1'b0 : waddr_rcv;
          tag_save <= cpu_data_req ? tag : tag_save;
          index_save <= cpu_data_req ? index : index_save;
-
          if (read_finish) begin
             cache_valid[index_save] <= 1'b1;
             cache_dirty[index_save] <= 1'b0;
             cache_tag[index_save] <= tag_save;
             cache_block[index_save] <= cache_data_rdata;
          end
-         else if (store && isIDLE && (hit || in_RM)) begin
+         else if ((hit || missed) && store && isIDLE) begin
             cache_dirty[index] <= 1'b1;
             cache_block[index] <= write_cache_data;
          end
